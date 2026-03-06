@@ -1,9 +1,31 @@
 services:
+  # --- STORAGE LAYER (MinIO) ---
   minio:
     image: quay.io/minio/minio
     command: server /data --console-address ":9001"
-    ports: ["9000:9000", "9001:9001"]
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  # --- PROCESSING LAYER (Spark Master) ---
   spark-master:
     build: .
-    environment: [SPARK_MODE=master]
-    ports: ["8080:8080"]
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+
+  # --- PROCESSING LAYER (Spark Worker) ---
+  spark-worker:
+    build: .
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
