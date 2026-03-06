@@ -1,0 +1,9 @@
+services:
+  minio:
+    image: quay.io/minio/minio
+    command: server /data --console-address ":9001"
+    ports: ["9000:9000", "9001:9001"]
+  spark-master:
+    build: .
+    environment: [SPARK_MODE=master]
+    ports: ["8080:8080"]
